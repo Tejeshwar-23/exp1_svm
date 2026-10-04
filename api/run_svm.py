@@ -1,15 +1,10 @@
 """
-============================================================
-VERCEL SERVERLESS FUNCTION: SVM KERNEL BENCHMARK API
-Team 15 ML Seminar
-============================================================
-Handles /api/health and /api/run-svm on Vercel Python Runtime.
+Vercel Serverless Function: SVM Retraining API
 """
 
 import io
 import json
 import base64
-import urllib.parse
 from http.server import BaseHTTPRequestHandler
 
 import matplotlib
@@ -25,7 +20,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 
-def fig_to_base64(fig, dpi=150):
+def fig_to_base64(fig, dpi=140):
     buf = io.BytesIO()
     fig.savefig(buf, format='png', dpi=dpi, bbox_inches='tight', facecolor=fig.get_facecolor(), edgecolor='none')
     buf.seek(0)
@@ -177,13 +172,6 @@ def run_svm(params):
 
 
 class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-        self.wfile.write(json.dumps({'status': 'online', 'experiment': 'SVM Kernels', 'platform': 'Vercel'}).encode('utf-8'))
-
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length).decode('utf-8')
