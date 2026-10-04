@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVM Kernel Benchmark & Visual Laboratory | ML Seminar</title>
+  <meta name="description" content="Academic-grade interactive evaluation and theoretical laboratory for Support Vector Machines comparing Linear, Polynomial, and RBF Gaussian Kernels on non-linear manifolds.">
+  
+  <!-- Modern Scientific Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- KaTeX for Publication-Quality Formula Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <div class="brand-main-title">
+            <span>Experiment 1: SVM Kernel Benchmark</span>
+            <span class="pill-badge">Supervised Learning</span>
+          </div>
+          <div class="brand-sub-title">Linear vs Polynomial ($d=3$) vs Gaussian RBF on $\text{make\_moons}$</div>
+        </div>
+      </div>
+
+      <!-- 4 Core Navigation Tabs (No Presentation Slides) -->
+      <nav class="main-nav" aria-label="Dashboard Navigation">
+        <button class="nav-tab active" data-tab="laboratory" id="tab-btn-laboratory">
+          <span class="nav-tab-icon">🎛️</span>
+          <span>Interactive Lab</span>
+        </button>
+        <button class="nav-tab" data-tab="gallery" id="tab-btn-gallery">
+          <span class="nav-tab-icon">📊</span>
+          <span>Visual Results & Gallery</span>
+        </button>
+        <button class="nav-tab" data-tab="code" id="tab-btn-code">
+          <span class="nav-tab-icon">💻</span>
+          <span>Code Walkthrough</span>
+        </button>
+        <button class="nav-tab" data-tab="viva" id="tab-btn-viva">
+          <span class="nav-tab-icon">📝</span>
+          <span>Viva Voce Assessment</span>
+        </button>
+      </nav>
+
+      <!-- System Status & Controls -->
+      <div class="header-actions">
+        <div class="status-indicator" id="server-status" title="Backend Server Status">
+          <span class="status-pulse"></span>
+          <span class="status-label" id="status-label">Checking API...</span>
+        </div>
+        <button class="action-icon-btn" id="theme-toggle-btn" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+        <button class="action-icon-btn" id="fullscreen-toggle-btn" title="Toggle Fullscreen" aria-label="Toggle fullscreen">
+          <span>⛶</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-layout" id="main-content">
+
+    <!-- ============================================================ -->
+    <!-- TAB 1: 🎛️ INTERACTIVE LABORATORY                             -->
+    <!-- ============================================================ -->
+    <section class="tab-pane active" id="pane-laboratory" role="tabpanel">
+      <!-- Section Header -->
+      <div class="section-hero">
+        <div class="hero-content">
+          <h1 class="hero-title">Support Vector Machine Interactive Laboratory</h1>
+          <p class="hero-desc">
+            Explore how kernel transformations project non-linearly separable crescent geometry into dual Hilbert spaces to construct maximal margin hyperplanes.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-outline" id="btn-reset-params" onclick="resetHyperparams()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Reset Defaults</span>
+          </button>
+          <button class="btn btn-primary" id="btn-retrain-svm" onclick="triggerSVMRetrain()">
+            <span class="btn-spinner" id="retrain-spinner"></span>
+            <span id="retrain-btn-text">⚡ Retrain Models</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="lab-grid-layout">
+        <!-- Sidebar: Hyperparameters -->
+        <aside class="sidebar-panel">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2 class="panel-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Hyperparameter Controls</span>
+              </h2>
+              <span class="badge-subtle">Live Config</span>
+            </div>
+
+            <div class="control-form">
+              <!-- Noise -->
+              <div class="control-item">
+                <div class="control-meta">
+                  <label for="input-noise" class="control-heading">Dataset Noise ($\sigma$)</label>
+                  <span class="control-number" id="disp-noise">0.25</span>
+                </div>
+                <input type="range" class="custom-range" id="input-noise" min="0.05" max="0.50" step="0.05" value="0.25" oninput="updateParamDisplay('noise', this.value)">
+                <div class="control-caption">Gaussian jitter added to crescent coordinates. $\sigma \ge 0.35$ induces severe class overlap.</div>
+              </div>
+
+              <!-- Sample Size -->
+              <div class="control-item">
+                <div class="control-meta">
+                  <label for="input-samples" class="control-heading">Sample Count ($N$)</label>
+                  <span class="control-number" id="disp-samples">500</span>
+                </div>
+                <input type="range" class="custom-range" id="input-samples" min="100" max="1000" step="50" value="500" oninput="updateParamDisplay('samples', this.value)">
+                <div class="control-caption">Partitioned $70\%$ train ($N_{tr} = 350$) / $30\%$ test ($N_{te} = 150$).</div>
+              </div>
+
+              <!-- Regularization C -->
+              <div class="control-item">
+                <div class="control-meta">
+                  <label for="input-c" class="control-heading">Regularization Penalty ($C$)</label>
+                  <span class="control-number" id="disp-c">1.0</span>
+                </div>
+                <div class="preset-pill-group">
+                  <button type="button" class="pill-btn" onclick="setCValue(0.01)">0.01</button>
+                  <button type="button" class="pill-btn" onclick="setCValue(0.1)">0.1</button>
+                  <button type="button" class="pill-btn active" id="btn-c-1" onclick="setCValue(1.0)">1.0</button>
+                  <button type="button" class="pill-btn" onclick="setCValue(10.0)">10.0</button>
+                  <button type="button" class="pill-btn" onclick="setCValue(100.0)">100.0</button>
+                </div>
+                <input type="range" class="custom-range" id="input-c" min="-2" max="2" step="0.2" value="0" oninput="updateCFromSlider(this.value)">
+                <div class="control-caption">Small $C$ = wide margin (soft); Large $C$ = strict penalty (hard margin, overfitting risk).</div>
+              </div>
+
+              <!-- Polynomial Degree -->
+              <div class="control-item">
+                <div class="control-meta">
+                  <label for="input-degree" class="control-heading">Polynomial Degree ($d$)</label>
+                  <span class="control-number" id="disp-degree">3</span>
+                </div>
+                <input type="range" class="custom-range" id="input-degree" min="2" max="5" step="1" value="3" oninput="updateParamDisplay('degree', this.value)">
+                <div class="control-caption">Controls maximum polynomial feature expansion order $(\gamma \langle x, x' \rangle + r)^d$.</div>
+              </div>
+
+              <!-- RBF Gamma -->
+              <div class="control-item">
+                <div class="control-meta">
+                  <label for="select-gamma" class="control-heading">RBF Coefficient ($\gamma$)</label>
+                  <span class="control-number" id="disp-gamma">scale</span>
+                </div>
+                <select class="custom-dropdown" id="select-gamma" onchange="updateParamDisplay('gamma', this.value)">
+                  <option value="scale" selected>Scale: 1 / (2 × Var(X))</option>
+                  <option value="auto">Auto: 1 / n_features (0.50)</option>
+                  <option value="0.1">0.10 (Broad Gaussian Envelope)</option>
+                  <option value="0.5">0.50 (Moderate Curvature)</option>
+                  <option value="1.0">1.00 (Standard Bandwidth)</option>
+                  <option value="5.0">5.00 (Tight Island Separation)</option>
+                  <option value="10.0">10.0 (Extreme Overfitting Spikes)</option>
+                </select>
+                <div class="control-caption">Kernel bandwidth parameter for $K(x, x') = \exp(-\gamma \|x - x'\|^2)$.</div>
+              </div>
+            </div>
+
+            <!-- Mathematical Intuition Box -->
+            <div class="math-guide-card">
+              <div class="math-guide-header">
+                <span class="math-guide-icon">📐</span>
+                <span class="math-guide-title">Theoretical Formulation</span>
+              </div>
+              <div class="math-guide-body">
+                <p>Primal Soft-Margin Objective:</p>
+                <div class="math-snippet">
+                  $$\min_{w, b, \xi} \frac{1}{2}\|w\|^2 + C \sum_{i=1}^N \xi_i$$
+                </div>
+                <p>Subject to:</p>
+                <div class="math-snippet">
+                  $$y_i (w^T \phi(x_i) + b) \ge 1 - \xi_i, \quad \xi_i \ge 0$$
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Display: Plots & Comparative Metrics -->
+        <div class="display-panel">
+          <!-- Live Metric Cards -->
+          <div class="metrics-card-row">
+            <!-- Linear Card -->
+            <div class="kernel-metric-card" id="card-linear">
+              <div class="card-top-bar">
+                <span class="kernel-type-label">Linear SVM</span>
+                <span class="sv-badge" id="badge-linear-sv">113 SVs (32.3%)</span>
+              </div>
+              <div class="primary-stat">
+                <span class="stat-large" id="lab-linear-acc">84.0%</span>
+                <span class="stat-unit">Accuracy</span>
+              </div>
+              <div class="sub-stat-grid">
+                <div class="sub-stat-cell">
+                  <span class="sub-label">Precision</span>
+                  <span class="sub-val" id="lab-linear-prec">0.859</span>
+                </div>
+                <div class="sub-stat-cell">
+                  <span class="sub-label">Recall</span>
+                  <span class="sub-val" id="lab-linear-rec">0.813</span>
+                </div>
+                <div class="sub-stat-cell">
+                  <span class="sub-label">F1 Score</span>
+                  <span class="sub-val highlight-f1" id="lab-linear-f1">0.836</span>
+                </div>
+              </div>
+              <div class="kernel-status-tag status-suboptimal">Planar Hyperplane Constraint</div>
+            </div>
+
+            <!-- Polynomial Card -->
+            <div class="kernel-metric-card" id="card-poly">
+              <div class="card-top-bar">
+                <span class="kernel-type-label" id="label-poly-title">Polynomial ($d=3$)</span>
+                <span class="sv-badge" id="badge-poly-sv">117 SVs (33.4%)</span>
+              </div>
+              <div class="primary-stat">
+                <span class="stat-large" id="lab-poly-acc">84.0%</span>
+                <span class="stat-unit">Accuracy</span>
+              </div>
+              <div class="sub-stat-grid">
+                <div class="sub-stat-cell">
+                  <span class="sub-label">Precision</span>
+                  <span class="sub-val" id="lab-poly-prec">0.831</span>
+                </div>
+                <div class="sub-stat-cell">
+                  <span class="sub-label">Recall</span>
+                  <span class="sub-val" id="lab-poly-rec">0.853</span>
+                </div>
+                <div class="sub-stat-cell">
+                  <span class="sub-label">F1 Score</span>
+                  <span class="sub-val highlight-f1" id="lab-poly-f1">0.842</span>
+                </div>
+              </div>
+              <div class="kernel-status-tag status-suboptimal">Cubic Curvature Inflection</div>
+            </div>
+
+            <!-- RBF Card (Best) -->
+            <div class="kernel-metric-card best-performer" id="card-rbf">
+              <div class="card-top-bar">
+                <span class="kernel-type-label">RBF (Gaussian)</span>
+                <span class="sv-badge badge-optimal" id="badge-rbf-sv">99 SVs (28.3%)</span>
+              </div>
+              <div class="primary-stat">
+                <span class="stat-large text-accent" id="lab-rbf-acc">94.7%</span>
+                <span class="stat-unit">Accuracy (Optimal)</span>
+              </div>
+              <div class="sub-stat-grid">
+                <div class="sub-stat-cell">
+                  <span class="sub-label">Precision</span>
+                  <span class="sub-val" id="lab-rbf-prec">0.972</span>
+                </div>
+                <div class="sub-stat-cell">
+                  <span class="sub-label">Recall</span>
+                  <span class="sub-val" id="lab-rbf-rec">0.920</span>
+                </div>
+                <div class="sub-stat-cell">
+                  <span class="sub-label">F1 Score</span>
+                  <span class="sub-val highlight-f1 text-accent" id="lab-rbf-f1">0.945</span>
+                </div>
+              </div>
+              <div class="kernel-status-tag status-optimal">Infinite-Dimensional Projection</div>
+            </div>
+          </div>
+
+          <!-- Decision Boundaries Visualization Container -->
+          <div class="chart-box">
+            <div class="chart-box-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title">Decision Boundaries, Margin Contours ($f(x)=\pm 1$), and Support Vectors</h3>
+                <span class="chart-subtitle">Solid line = Separating hyperplane ($f(x)=0$); Dashed line = Margins ($f(x)=\pm 1$); Encircled points = Support Vectors</span>
+              </div>
+              <div class="chart-header-tools">
+                <button class="tool-btn" onclick="openPlotZoom('live-boundaries-plot', 'SVM Decision Boundaries & Margins')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                  <span>Inspect Zoom</span>
+                </button>
+              </div>
+            </div>
+            <div class="plot-canvas-wrapper" id="boundaries-wrapper">
+              <img id="live-boundaries-plot" src="outputs/svm/svm_decision_boundaries.png" alt="SVM Decision Boundaries Comparison" class="fluid-plot-img">
+            </div>
+          </div>
+
+          <!-- Multi-Metric Performance Profiles & Comparison Table -->
+          <div class="performance-section-grid">
+            <div class="chart-box">
+              <div class="chart-box-header">
+                <h3 class="chart-title">Multi-Metric Quantitative Profiles</h3>
+                <button class="tool-btn" onclick="openPlotZoom('live-metrics-plot', 'Quantitative Metric Profiles')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <span>Zoom</span>
+                </button>
+              </div>
+              <div class="plot-canvas-wrapper">
+                <img id="live-metrics-plot" src="outputs/svm/svm_metrics_comparison.png" alt="SVM Metrics Comparison Bar Chart" class="fluid-plot-img">
+              </div>
+            </div>
+
+            <div class="chart-box">
+              <div class="chart-box-header">
+                <h3 class="chart-title">Rigorous Performance Breakdown Table</h3>
+              </div>
+              <div class="table-scroll-wrap">
+                <table class="academic-table" id="summary-metrics-table">
+                  <thead>
+                    <tr>
+                      <th>Kernel Function</th>
+                      <th>Accuracy</th>
+                      <th>Precision</th>
+                      <th>Recall</th>
+                      <th>F1 Score</th>
+                      <th>Support Vectors ($N_{SV}$)</th>
+                      <th>Sparsity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="table-tag">Linear</span></td>
+                      <td id="tbl-lin-acc">84.00%</td>
+                      <td id="tbl-lin-prec">0.8592</td>
+                      <td id="tbl-lin-rec">0.8133</td>
+                      <td id="tbl-lin-f1">0.8356</td>
+                      <td id="tbl-lin-sv">113 / 350</td>
+                      <td>32.3%</td>
+                    </tr>
+                    <tr>
+                      <td><span class="table-tag" id="tbl-poly-name">Polynomial (d=3)</span></td>
+                      <td id="tbl-poly-acc">84.00%</td>
+                      <td id="tbl-poly-prec">0.8312</td>
+                      <td id="tbl-poly-rec">0.8533</td>
+                      <td id="tbl-poly-f1">0.8421</td>
+                      <td id="tbl-poly-sv">117 / 350</td>
+                      <td>33.4%</td>
+                    </tr>
+                    <tr class="table-highlight-row">
+                      <td><span class="table-tag table-tag-rbf">RBF (Gaussian)</span></td>
+                      <td id="tbl-rbf-acc"><strong>94.67%</strong></td>
+                      <td id="tbl-rbf-prec"><strong>0.9718</strong></td>
+                      <td id="tbl-rbf-rec"><strong>0.9200</strong></td>
+                      <td id="tbl-rbf-f1"><strong>0.9452</strong></td>
+                      <td id="tbl-rbf-sv"><strong>99 / 350</strong></td>
+                      <td><strong>28.3% (Sparse)</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-footnote">
+                <strong>Academic Synthesis:</strong> The RBF kernel achieves the highest generalization accuracy ($94.67\%$) while utilizing the fewest support vectors ($99$), confirming maximal margin efficiency and optimal structural risk minimization.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 2: 📊 VISUAL RESULTS & HIGH-RES GALLERY                  -->
+    <!-- ============================================================ -->
+    <section class="tab-pane" id="pane-gallery" role="tabpanel">
+      <div class="section-hero">
+        <div class="hero-content">
+          <h2 class="hero-title">High-Resolution Publication Artifacts (300 DPI)</h2>
+          <p class="hero-desc">
+            Pre-computed, publication-grade benchmark figures generated with Matplotlib and Scikit-Learn, stored at <code>outputs/svm/</code>.
+          </p>
+        </div>
+      </div>
+
+      <div class="gallery-cards-grid">
+        <!-- Gallery Item 1 -->
+        <div class="gallery-item-card" onclick="openPlotZoom('outputs/svm/svm_decision_boundaries.png', 'High-Res Decision Boundaries (300 DPI)')">
+          <div class="gallery-image-box">
+            <img src="outputs/svm/svm_decision_boundaries.png" alt="Decision Boundaries" class="gallery-thumbnail">
+            <div class="gallery-overlay">
+              <span class="overlay-badge">🔍 Click to Inspect (300 DPI)</span>
+            </div>
+          </div>
+          <div class="gallery-meta">
+            <div class="gallery-tag-row">
+              <span class="badge-subtle">Decision Surface</span>
+              <span class="badge-subtle">300 DPI</span>
+              <span class="badge-subtle">5400 × 1740 px</span>
+            </div>
+            <h3 class="gallery-card-title">Side-by-Side Kernel Decision Boundaries & Margins</h3>
+            <p class="gallery-card-desc">
+              Visualizes the geometric classification boundaries across Linear ($w^T x + b = 0$), Polynomial ($d=3$), and RBF kernels. Notice the margin envelopes ($f(x) = \pm 1$) and highlighted support vector instances.
+            </p>
+          </div>
+        </div>
+
+        <!-- Gallery Item 2 -->
+        <div class="gallery-item-card" onclick="openPlotZoom('outputs/svm/svm_metrics_comparison.png', 'Multi-Metric Benchmark (300 DPI)')">
+          <div class="gallery-image-box">
+            <img src="outputs/svm/svm_metrics_comparison.png" alt="Metrics Comparison" class="gallery-thumbnail">
+            <div class="gallery-overlay">
+              <span class="overlay-badge">🔍 Click to Inspect (300 DPI)</span>
+            </div>
+          </div>
+          <div class="gallery-meta">
+            <div class="gallery-tag-row">
+              <span class="badge-subtle">Evaluation</span>
+              <span class="badge-subtle">300 DPI</span>
+              <span class="badge-subtle">3000 × 1560 px</span>
+            </div>
+            <h3 class="gallery-card-title">Quantitative Metric Profiles: Accuracy, Precision, Recall & F1</h3>
+            <p class="gallery-card-desc">
+              Comparative bar charts on the holdout test partition ($N=150$). Quantifies RBF superiority across all four classification metrics ($F_1 = 0.945$ vs $0.836$ for Linear).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Theoretical Deep Dive Cards -->
+      <div class="theory-analysis-grid">
+        <div class="theory-card">
+          <div class="theory-header">
+            <span class="theory-num">01</span>
+            <h4>Linear Kernel Limitations</h4>
+          </div>
+          <p>
+            Constrained to a flat hyperplane $w^T x + b = 0$ in $\mathbb{R}^2$. Because the <code>make_moons</code> dataset forms intertwined concave crescents, any straight line necessarily truncates both crescent lobes, capping accuracy at $\approx 84\%$.
+          </p>
+          <div class="math-snippet">$$K_{\text{Linear}}(x, x') = x^T x'$$</div>
+        </div>
+
+        <div class="theory-card">
+          <div class="theory-header">
+            <span class="theory-num">02</span>
+            <h4>Polynomial ($d=3$) Inflection</h4>
+          </div>
+          <p>
+            Maps data into a 9-dimensional polynomial feature space. While cubic curvature allows a single S-shaped inflection curve, it cannot form closed radial loops required to completely encapsulate the inner crescent arc.
+          </p>
+          <div class="math-snippet">$$K_{\text{Poly}}(x, x') = (\gamma x^T x' + r)^d$$</div>
+        </div>
+
+        <div class="theory-card highlight-theory">
+          <div class="theory-header">
+            <span class="theory-num">03</span>
+            <h4>Gaussian RBF Hilbert Projection</h4>
+          </div>
+          <p>
+            Via Taylor expansion of $\exp(-\gamma \|x-x'\|^2)$, the RBF kernel implicitly maps coordinates to an <strong>infinite-dimensional Hilbert space</strong> $\mathcal{H}$, constructing seamless radial contour basins with $94.67\%$ accuracy.
+          </p>
+          <div class="math-snippet">$$K_{\text{RBF}}(x, x') = \exp(-\gamma \|x - x'\|^2)$$</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 3: 💻 CODE WALKTHROUGH                                   -->
+    <!-- ============================================================ -->
+    <section class="tab-pane" id="pane-code" role="tabpanel">
+      <div class="section-hero">
+        <div class="hero-content">
+          <h2 class="hero-title">Scikit-Learn Implementation & Mathematical Pipeline</h2>
+          <p class="hero-desc">
+            Step-by-step verified Python implementation covering data synthesis, leakage-free feature scaling, dual optimization fitting, and margin meshgrid computation.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="copyFullCode()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span id="copy-btn-label">Copy Complete Script</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pipeline Steps Navigation -->
+      <div class="pipeline-stepper">
+        <button class="step-btn active" onclick="showCodeStep(1)" id="step-btn-1">
+          <span class="step-number">1</span>
+          <span class="step-text">Data Synthesis</span>
+        </button>
+        <button class="step-btn" onclick="showCodeStep(2)" id="step-btn-2">
+          <span class="step-number">2</span>
+          <span class="step-text">Leakage-Free Scaling</span>
+        </button>
+        <button class="step-btn" onclick="showCodeStep(3)" id="step-btn-3">
+          <span class="step-number">3</span>
+          <span class="step-text">SVM Kernel Fitting</span>
+        </button>
+        <button class="step-btn" onclick="showCodeStep(4)" id="step-btn-4">
+          <span class="step-number">4</span>
+          <span class="step-text">Margin Meshgrid & Contours</span>
+        </button>
+        <button class="step-btn" onclick="showCodeStep('all')" id="step-btn-all">
+          <span class="step-number">★</span>
+          <span class="step-text">Full Pipeline (All)</span>
+        </button>
+      </div>
+
+      <!-- Code Box with Annotation Pane -->
+      <div class="code-walkthrough-grid">
+        <div class="code-editor-card">
+          <div class="code-editor-header">
+            <div class="editor-tab">
+              <span class="editor-file-icon">🐍</span>
+              <span class="editor-filename" id="code-filename">01_svm_kernel_comparison.py — Step 1</span>
+            </div>
+            <span class="editor-lang-badge">Python 3.12 / scikit-learn</span>
+          </div>
+          <div class="code-body-wrapper">
+            <pre class="code-pre" id="active-code-pre"><code class="code-content" id="active-code-block"></code></pre>
+          </div>
+        </div>
+
+        <div class="code-explanation-card">
+          <div class="explanation-card-header">
+            <h3 class="expl-title" id="expl-title">Step 1: Non-Linear Manifold Synthesis</h3>
+          </div>
+          <div class="expl-content" id="expl-body">
+            <p><strong>Method:</strong> <code>sklearn.datasets.make_moons</code></p>
+            <p>Generates two interleaving half-circles in 2D feature space with Gaussian noise $\sigma = 0.25$. This creates a benchmark problem where linear separability is mathematically impossible.</p>
+            <div class="callout-tip">
+              <strong>Crucial Step:</strong> We specify <code>stratify=y</code> in <code>train_test_split</code> to guarantee identical class balance ($50/50$) in both training ($N=350$) and testing ($N=150$) partitions.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 4: 📝 VIVA VOCE MCQ ASSESSMENT                          -->
+    <!-- ============================================================ -->
+    <section class="tab-pane" id="pane-viva" role="tabpanel">
+      <div class="section-hero">
+        <div class="hero-content">
+          <h2 class="hero-title">Technical Viva Voce & Conceptual MCQ Assessment</h2>
+          <p class="hero-desc">
+            Rigorous examination questions testing theoretical mechanics: maximum margin formulation, support vector sparsity, the kernel trick, regularization parameter $C$, and Gaussian $\gamma$ bandwidth.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-outline" onclick="resetQuizState()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Reset Assessment</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quiz Live Score Banner -->
+      <div class="quiz-score-banner">
+        <div class="score-metric-group">
+          <div class="score-badge-large" id="live-quiz-score">0 / 5</div>
+          <div class="score-text-group">
+            <div class="score-label">Assessment Progress & Score</div>
+            <div class="score-subtext" id="live-quiz-percent">Completed: 0 of 5 Questions (0%)</div>
+          </div>
+        </div>
+        <div class="quiz-bar-container">
+          <div class="quiz-bar-fill" id="quiz-progress-bar-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- MCQ Questions Container -->
+      <div class="mcq-cards-container" id="mcq-container">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- High-Res Zoom Modal -->
+  <div class="modal-backdrop" id="plot-zoom-modal" onclick="closePlotZoom(event)">
+    <div class="modal-dialog" onclick="event.stopPropagation()">
+      <div class="modal-dialog-header">
+        <div class="modal-title-group">
+          <span class="modal-dot"></span>
+          <h3 class="modal-title" id="zoom-modal-title">High-Resolution Visual Inspection</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closePlotZoom()" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-dialog-body">
+        <img id="zoom-modal-image" src="" alt="Zoomed High-Resolution Plot" class="modal-inspect-img">
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
