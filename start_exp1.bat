@@ -8,5 +8,5 @@ echo Opening browser at http://localhost:8001 ...
 start http://localhost:8001
 echo.
 echo Starting Python Backend Server (Port 8001)...
-python server.py
+python local_server.py
 pause

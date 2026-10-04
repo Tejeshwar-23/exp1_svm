@@ -162,11 +162,23 @@ def run_svm(params):
 
     metrics_img = fig_to_base64(fig2, dpi=140)
 
+    rbf_key = next((k for k in metrics if 'RBF' in k), 'RBF (Gaussian)')
+    summary_text = (f"Trained 3 SVM models on {n_samples} make_moons samples (Noise={noise:.2f}, C={c_val}, γ={gamma}). "
+                    f"RBF achieved {metrics[rbf_key]['accuracy']*100:.1f}% accuracy with {metrics[rbf_key]['support_vectors']} support vectors.")
+
     return {
         'status': 'success',
         'metrics': metrics,
         'boundaries_chart': boundaries_img,
         'metrics_chart': metrics_img,
+        'summary': summary_text,
+        'params': {
+            'n_samples': n_samples,
+            'noise': noise,
+            'c_val': c_val,
+            'poly_degree': poly_degree,
+            'gamma': gamma
+        },
         'environment': 'Vercel Serverless Function'
     }
 

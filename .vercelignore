@@ -1,0 +1,11 @@
+# Vercel Ignore List
+local_server.py
+server.py
+01_svm_kernel_comparison.py
+start_exp1.bat
+Procfile
+outputs/
+docs/
+.git/
+__pycache__/
+*.pyc
