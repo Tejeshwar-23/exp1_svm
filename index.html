@@ -46,10 +46,6 @@
           <span class="nav-tab-icon">🎛️</span>
           <span>Interactive Lab</span>
         </button>
-        <button class="nav-tab" data-tab="gallery" id="tab-btn-gallery">
-          <span class="nav-tab-icon">📊</span>
-          <span>Visual Results & Gallery</span>
-        </button>
         <button class="nav-tab" data-tab="code" id="tab-btn-code">
           <span class="nav-tab-icon">💻</span>
           <span>Code Walkthrough</span>
@@ -380,101 +376,7 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- TAB 2: 📊 VISUAL RESULTS & HIGH-RES GALLERY                  -->
-    <!-- ============================================================ -->
-    <section class="tab-pane" id="pane-gallery" role="tabpanel">
-      <div class="section-hero">
-        <div class="hero-content">
-          <h2 class="hero-title">High-Resolution Publication Artifacts (300 DPI)</h2>
-          <p class="hero-desc">
-            Pre-computed, publication-grade benchmark figures generated with Matplotlib and Scikit-Learn, stored at <code>outputs/svm/</code>.
-          </p>
-        </div>
-      </div>
-
-      <div class="gallery-cards-grid">
-        <!-- Gallery Item 1 -->
-        <div class="gallery-item-card" onclick="openPlotZoom('outputs/svm/svm_decision_boundaries.png', 'High-Res Decision Boundaries (300 DPI)')">
-          <div class="gallery-image-box">
-            <img src="outputs/svm/svm_decision_boundaries.png" alt="Decision Boundaries" class="gallery-thumbnail">
-            <div class="gallery-overlay">
-              <span class="overlay-badge">🔍 Click to Inspect (300 DPI)</span>
-            </div>
-          </div>
-          <div class="gallery-meta">
-            <div class="gallery-tag-row">
-              <span class="badge-subtle">Decision Surface</span>
-              <span class="badge-subtle">300 DPI</span>
-              <span class="badge-subtle">5400 × 1740 px</span>
-            </div>
-            <h3 class="gallery-card-title">Side-by-Side Kernel Decision Boundaries & Margins</h3>
-            <p class="gallery-card-desc">
-              Visualizes the geometric classification boundaries across Linear ($w^T x + b = 0$), Polynomial ($d=3$), and RBF kernels. Notice the margin envelopes ($f(x) = \pm 1$) and highlighted support vector instances.
-            </p>
-          </div>
-        </div>
-
-        <!-- Gallery Item 2 -->
-        <div class="gallery-item-card" onclick="openPlotZoom('outputs/svm/svm_metrics_comparison.png', 'Multi-Metric Benchmark (300 DPI)')">
-          <div class="gallery-image-box">
-            <img src="outputs/svm/svm_metrics_comparison.png" alt="Metrics Comparison" class="gallery-thumbnail">
-            <div class="gallery-overlay">
-              <span class="overlay-badge">🔍 Click to Inspect (300 DPI)</span>
-            </div>
-          </div>
-          <div class="gallery-meta">
-            <div class="gallery-tag-row">
-              <span class="badge-subtle">Evaluation</span>
-              <span class="badge-subtle">300 DPI</span>
-              <span class="badge-subtle">3000 × 1560 px</span>
-            </div>
-            <h3 class="gallery-card-title">Quantitative Metric Profiles: Accuracy, Precision, Recall & F1</h3>
-            <p class="gallery-card-desc">
-              Comparative bar charts on the holdout test partition ($N=150$). Quantifies RBF superiority across all four classification metrics ($F_1 = 0.945$ vs $0.836$ for Linear).
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Theoretical Deep Dive Cards -->
-      <div class="theory-analysis-grid">
-        <div class="theory-card">
-          <div class="theory-header">
-            <span class="theory-num">01</span>
-            <h4>Linear Kernel Limitations</h4>
-          </div>
-          <p>
-            Constrained to a flat hyperplane $w^T x + b = 0$ in $\mathbb{R}^2$. Because the <code>make_moons</code> dataset forms intertwined concave crescents, any straight line necessarily truncates both crescent lobes, capping accuracy at $\approx 84\%$.
-          </p>
-          <div class="math-snippet">$$K_{\text{Linear}}(x, x') = x^T x'$$</div>
-        </div>
-
-        <div class="theory-card">
-          <div class="theory-header">
-            <span class="theory-num">02</span>
-            <h4>Polynomial ($d=3$) Inflection</h4>
-          </div>
-          <p>
-            Maps data into a 9-dimensional polynomial feature space. While cubic curvature allows a single S-shaped inflection curve, it cannot form closed radial loops required to completely encapsulate the inner crescent arc.
-          </p>
-          <div class="math-snippet">$$K_{\text{Poly}}(x, x') = (\gamma x^T x' + r)^d$$</div>
-        </div>
-
-        <div class="theory-card highlight-theory">
-          <div class="theory-header">
-            <span class="theory-num">03</span>
-            <h4>Gaussian RBF Hilbert Projection</h4>
-          </div>
-          <p>
-            Via Taylor expansion of $\exp(-\gamma \|x-x'\|^2)$, the RBF kernel implicitly maps coordinates to an <strong>infinite-dimensional Hilbert space</strong> $\mathcal{H}$, constructing seamless radial contour basins with $94.67\%$ accuracy.
-          </p>
-          <div class="math-snippet">$$K_{\text{RBF}}(x, x') = \exp(-\gamma \|x - x'\|^2)$$</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- TAB 3: 💻 CODE WALKTHROUGH                                   -->
+    <!-- TAB 2: 💻 CODE WALKTHROUGH                                   -->
     <!-- ============================================================ -->
     <section class="tab-pane" id="pane-code" role="tabpanel">
       <div class="section-hero">
