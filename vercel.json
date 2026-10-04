@@ -2,7 +2,6 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/health", "destination": "/api/health.py" },
-    { "source": "/api/run-svm", "destination": "/api/run_svm.py" }
+    { "source": "/api/(.*)", "destination": "/api/index.py" }
   ]
 }
