@@ -133,8 +133,8 @@ text_light = '#F8FAFC'
 text_muted = '#94A3B8'
 border_col = '#334155'
 
-fig, axes = plt.subplots(1, 3, figsize=(18, 5.8), facecolor=bg_dark)
-fig.subplots_adjust(top=0.82, wspace=0.22)
+fig, axes = plt.subplots(1, 3, figsize=(18, 6.4), facecolor=bg_dark)
+fig.subplots_adjust(top=0.74, bottom=0.12, left=0.05, right=0.96, wspace=0.22)
 
 h = 0.02
 x_min, x_max = X_train_scaled[:, 0].min() - 0.6, X_train_scaled[:, 0].max() + 0.6
@@ -149,7 +149,7 @@ color_class1 = '#38BDF8' # Sky blue
 
 fig.suptitle('Support Vector Machine Kernel Comparison — Decision Boundaries & Margins\n'
              r'Dataset: $\bf{make\_moons}$ ($N=500$, $\sigma=0.25$, $C=1.0$) — 300 DPI Publication Benchmark',
-             fontsize=14.5, fontweight='bold', color=text_light, y=0.96)
+             fontsize=14, fontweight='bold', color=text_light, y=0.93)
 
 for ax, (name, r) in zip(axes, results.items()):
     ax.set_facecolor(panel_bg)
@@ -182,7 +182,7 @@ for ax, (name, r) in zip(axes, results.items()):
 
     # Subplot Title & Annotations
     ax.set_title(f"{name} Kernel\nAcc: {r['accuracy']*100:.1f}% | F1: {r['f1']:.3f} | SVs: {r['n_support_vectors']}",
-                 fontsize=12, fontweight='bold', color=text_light, pad=10)
+                 fontsize=11.5, fontweight='bold', color=text_light, pad=8)
     ax.set_xlabel('Standardized Feature 1 ($x_1$)', fontsize=9.5, color=text_muted)
     ax.set_ylabel('Standardized Feature 2 ($x_2$)', fontsize=9.5, color=text_muted)
     ax.tick_params(colors=text_muted, labelsize=8.5)

@@ -107,10 +107,10 @@ def run_svm(params):
     text_muted = '#94A3B8'
     border_col = '#334155'
 
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5.0), facecolor=bg_dark)
-    fig.subplots_adjust(top=0.80, wspace=0.20)
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5.6), facecolor=bg_dark)
+    fig.subplots_adjust(top=0.75, bottom=0.12, left=0.05, right=0.96, wspace=0.22)
     fig.suptitle(f'Live SVM Decision Boundaries & Margins (N={n_samples}, σ={noise:.2f}, C={c_val}, γ={gamma})',
-                 fontsize=13.5, fontweight='bold', color=text_light, y=0.96)
+                 fontsize=13.5, fontweight='bold', color=text_light, y=0.93)
 
     h = 0.03
     x_min, x_max = X_train_scaled[:, 0].min() - 0.6, X_train_scaled[:, 0].max() + 0.6
