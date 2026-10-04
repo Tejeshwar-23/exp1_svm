@@ -1,16 +1,18 @@
 """
 Unified Vercel Serverless Entrypoint for Experiment 1: SVM Kernels
+Serves both:
+  - Interactive UI & Static assets (index.html, styles.css, app.js)
+  - Backend API Endpoints (GET /api/health, POST /api/run-svm)
 Supports:
-  - Vercel WSGI / ASGI Function entrypoint: `app` and `application`
-  - Vercel BaseHTTPRequestHandler: `handler`
-Endpoints:
-  - GET  /api/health   -> Health status
-  - POST /api/run-svm  -> Retrain SVM models and return metrics & charts
+  - WSGI callable: `app` and `application`
+  - BaseHTTPRequestHandler: `handler`
 """
 
+import os
 import io
 import json
 import base64
+import mimetypes
 import urllib.parse
 from http.server import BaseHTTPRequestHandler
 
@@ -25,6 +27,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def fig_to_base64(fig, dpi=140):
@@ -190,8 +194,58 @@ def run_svm(params):
     }
 
 
+def serve_static_file(file_rel_path, start_response):
+    target = 'index.html' if file_rel_path in ('', '/', '/index.html') else file_rel_path.lstrip('/')
+    file_path = os.path.join(BASE_DIR, target)
+    
+    if os.path.isfile(file_path):
+        mime_type, _ = mimetypes.guess_type(file_path)
+        if not mime_type:
+            if file_path.endswith('.css'):
+                mime_type = 'text/css'
+            elif file_path.endswith('.js'):
+                mime_type = 'application/javascript'
+            elif file_path.endswith('.html'):
+                mime_type = 'text/html'
+            elif file_path.endswith('.png'):
+                mime_type = 'image/png'
+            elif file_path.endswith('.svg'):
+                mime_type = 'image/svg+xml'
+            else:
+                mime_type = 'application/octet-stream'
+
+        if mime_type.startswith('text/') or mime_type in ('application/javascript', 'application/json'):
+            mime_type += '; charset=utf-8'
+
+        with open(file_path, 'rb') as f:
+            content = f.read()
+
+        start_response('200 OK', [
+            ('Content-Type', mime_type),
+            ('Content-Length', str(len(content))),
+            ('Cache-Control', 'public, max-age=3600'),
+            ('Access-Control-Allow-Origin', '*')
+        ])
+        return [content]
+
+    # Fallback to index.html
+    index_path = os.path.join(BASE_DIR, 'index.html')
+    if os.path.isfile(index_path):
+        with open(index_path, 'rb') as f:
+            content = f.read()
+        start_response('200 OK', [
+            ('Content-Type', 'text/html; charset=utf-8'),
+            ('Content-Length', str(len(content))),
+            ('Access-Control-Allow-Origin', '*')
+        ])
+        return [content]
+
+    start_response('404 Not Found', [('Content-Type', 'text/plain')])
+    return [b'File Not Found']
+
+
 # ==========================================
-# WSGI Application entrypoint for Vercel
+# WSGI Application Entrypoint for Vercel
 # ==========================================
 def app(environ, start_response):
     path = environ.get('PATH_INFO', '')
@@ -208,7 +262,8 @@ def app(environ, start_response):
         start_response('200 OK', cors_headers)
         return [b'']
 
-    if method == 'GET' and (path.endswith('/health') or path == '/api/health' or path == '/health'):
+    # 1. API: Health Check
+    if method == 'GET' and (path == '/api/health' or path.endswith('/health')):
         start_response('200 OK', cors_headers)
         payload = {
             'status': 'online',
@@ -217,7 +272,8 @@ def app(environ, start_response):
         }
         return [json.dumps(payload).encode('utf-8')]
 
-    if method == 'POST' and (path.endswith('/run-svm') or path.endswith('/run_svm') or '/run-svm' in path or '/run_svm' in path):
+    # 2. API: Retrain SVM
+    if method == 'POST' and (path == '/api/run-svm' or path.endswith('/run-svm') or path.endswith('/run_svm')):
         try:
             content_length = int(environ.get('CONTENT_LENGTH', 0) or 0)
         except (ValueError, TypeError):
@@ -237,8 +293,8 @@ def app(environ, start_response):
             start_response('500 Internal Server Error', cors_headers)
             return [json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8')]
 
-    start_response('200 OK', cors_headers)
-    return [json.dumps({'status': 'online', 'message': 'SVM API Root', 'path': path}).encode('utf-8')]
+    # 3. Serve Frontend Web UI & Assets
+    return serve_static_file(path, start_response)
 
 
 # Alias for WSGI compliance
@@ -246,23 +302,51 @@ application = app
 
 
 # ==========================================
-# BaseHTTPRequestHandler entrypoint for Vercel
+# BaseHTTPRequestHandler Entrypoint for Vercel
 # ==========================================
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-        self.wfile.write(json.dumps({
-            'status': 'online',
-            'experiment': 'SVM Kernels',
-            'platform': 'Vercel Serverless',
-            'path': parsed.path
-        }).encode('utf-8'))
+        path = parsed.path
+
+        if path == '/api/health' or path.endswith('/health'):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                'status': 'online',
+                'experiment': 'SVM Kernels',
+                'platform': 'Vercel Serverless'
+            }).encode('utf-8'))
+            return
+
+        target = 'index.html' if path in ('', '/', '/index.html') else path.lstrip('/')
+        file_path = os.path.join(BASE_DIR, target)
+        if not os.path.isfile(file_path):
+            file_path = os.path.join(BASE_DIR, 'index.html')
+
+        if os.path.isfile(file_path):
+            mime_type, _ = mimetypes.guess_type(file_path)
+            if not mime_type:
+                if file_path.endswith('.css'): mime_type = 'text/css'
+                elif file_path.endswith('.js'): mime_type = 'application/javascript'
+                elif file_path.endswith('.html'): mime_type = 'text/html'
+                else: mime_type = 'application/octet-stream'
+
+            self.send_response(200)
+            self.send_header('Content-Type', mime_type)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            with open(file_path, 'rb') as f:
+                self.wfile.write(f.read())
+        else:
+            self.send_response(404)
+            self.end_headers()
 
     def do_POST(self):
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else ''
         try:
@@ -270,19 +354,23 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             params = {}
 
-        try:
-            res = run_svm(params)
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+        if path == '/api/run-svm' or path.endswith('/run-svm') or path.endswith('/run_svm'):
+            try:
+                res = run_svm(params)
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(res).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
+        else:
+            self.send_response(404)
             self.end_headers()
-            self.wfile.write(json.dumps(res).encode('utf-8'))
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
 
     def do_OPTIONS(self):
         self.send_response(200)
